@@ -22,7 +22,7 @@ A web-based ATS-style system that evaluates how well a resume matches a job desc
 
 ## ▶️ How to Run
 ```bash
-git clone https://github.com/your-username/resume-job-matcher.git
+git clone https://github.com/gantaNandini/resume-job-matcher.git
 cd resume-job-matcher
 python -m venv venv
 venv\Scripts\activate
