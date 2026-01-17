@@ -1,0 +1,164 @@
+* {
+    box-sizing: border-box;
+    font-family: "Inter", "Segoe UI", sans-serif;
+}
+
+body {
+    margin: 0;
+    min-height: 100vh;
+    background: linear-gradient(135deg, #eef2ff, #f8fafc);
+    color: #0f172a;
+}
+
+/* CONTAINER */
+.container {
+    max-width: 900px;
+    margin: 40px auto;
+    padding: 32px;
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 22px;
+    box-shadow: 0 30px 80px rgba(15, 23, 42, 0.12);
+}
+
+/* HEADER (FIXED) */
+.header {
+    background: linear-gradient(90deg, #1e3c72, #6a11cb);
+    padding: 22px;
+    border-radius: 14px;
+    text-align: center;
+    margin-bottom: 25px;
+}
+
+.header-title {
+    color: #ffffff;
+    font-size: 26px;
+    font-weight: 700;
+    margin: 0;
+}
+
+/* HEADINGS */
+h3 {
+    font-size: 20px;
+    margin-bottom: 12px;
+}
+
+/* FORM */
+form {
+    display: grid;
+    gap: 14px;
+    margin-bottom: 30px;
+}
+
+input[type="file"],
+textarea {
+    border-radius: 14px;
+    padding: 14px;
+    border: 1px solid #e2e8f0;
+    background: #f8fafc;
+    font-size: 14px;
+}
+
+textarea {
+    min-height: 140px;
+}
+/* ================= BUTTONS ================= */
+button {
+    padding: 14px 20px;
+    border-radius: 14px;
+    border: none;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    background: linear-gradient(135deg, #2563eb, #7c3aed);
+    color: white;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 30px rgba(99, 102, 241, 0.35);
+}
+
+/* Secondary */
+a button {
+    background: linear-gradient(135deg, #10b981, #22c55e);
+}
+
+/* ================= ANALYSIS CARDS ================= */
+.analysis-box {
+    margin-bottom: 24px;
+    padding: 22px;
+    border-radius: 18px;
+    background: rgba(255, 255, 255, 0.9);
+    box-shadow: 0 20px 45px rgba(0, 0, 0, 0.08);
+    position: relative;
+}
+
+.analysis-box::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 4px;
+    width: 100%;
+    border-radius: 18px 18px 0 0;
+    background: linear-gradient(90deg, #2563eb, #7c3aed);
+}
+
+/* ================= PROGRESS ================= */
+.progress {
+    background: #e5e7eb;
+    border-radius: 999px;
+    overflow: hidden;
+    height: 12px;
+}
+
+.progress-fill {
+    height: 100%;
+    width: 0%;
+    border-radius: 999px;
+    transition: width 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* color helpers */
+.progress-fill.good { background: #22c55e; }
+.progress-fill.ok   { background: #f59e0b; }
+.progress-fill.bad  { background: #ef4444; }
+
+/* ================= TEXT ================= */
+.confidence {
+    font-weight: 700;
+    margin-top: 6px;
+}
+
+small {
+    color: #475569;
+}
+
+/* ================= LISTS ================= */
+ul {
+    padding-left: 18px;
+}
+
+li {
+    margin-bottom: 8px;
+    line-height: 1.6;
+}
+
+/* ================= RESPONSIVE ================= */
+@media (max-width: 768px) {
+    .container {
+        margin: 20px;
+        padding: 24px;
+    }
+
+    h2 {
+        font-size: 26px;
+    }
+}
+.action-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 18px;
+    margin: 30px 0 10px;
+}

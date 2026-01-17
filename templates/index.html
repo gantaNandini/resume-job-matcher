@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Resume–Job Match Engine</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+
+<body>
+<div class="container">
+
+    <!-- HEADER -->
+    <div class="header">
+        <h2 class="header-title">Resume–Job Match Scoring Engine</h2>
+    </div>
+
+    <!-- Upload Form -->
+    <form method="POST" enctype="multipart/form-data">
+        <input type="file" name="resume" required>
+
+        <textarea
+            name="job_description"
+            placeholder="Paste job description here..."
+            required></textarea>
+
+        <button type="submit">Check Match</button>
+    </form>
+
+    <!-- Error -->
+    {% if error %}
+    <div style="color:red; margin-top:15px;">
+        {{ error }}
+    </div>
+    {% endif %}
+
+    <!-- Overall Match Score -->
+    {% if score is not none %}
+    <div class="analysis-box">
+        <h3>Overall Match Score</h3>
+
+        <div class="progress">
+            <div class="progress-fill
+                {% if score < 5 %}bad{% elif score < 7.5 %}ok{% else %}good{% endif %}"
+                data-width="{{ score * 10 }}">
+            </div>
+        </div>
+
+        <p><b>{{ score }}/10</b></p>
+
+        {% if confidence %}
+        <p class="confidence">
+            Confidence Level:
+            <b>{{ confidence }}</b>
+        </p>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    <!-- Download PDF -->
+    {% if pdf_path %}
+    <div class="analysis-box">
+        <a href="/{{ pdf_path }}" download>
+            <button>Download ATS PDF Report</button>
+        </a>
+    </div>
+    {% endif %}
+
+    <!-- Why Score Is Low -->
+    {% if reasons %}
+    <div class="analysis-box">
+        <h3>Why is the score low? (JD + Market Analysis)</h3>
+        <ul>
+            {% for reason in reasons %}
+            <li>{{ reason }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+
+    <!-- Skill Gap -->
+    {% if skill_gap and skill_gap.missing %}
+    <div class="analysis-box">
+        <h3>Missing Skills (Critical Gaps)</h3>
+        <ul>
+            {% for skill in skill_gap.missing %}
+            <li>{{ skill }}</li>
+        {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+
+    {% if skill_gap and skill_gap.matched %}
+    <div class="analysis-box">
+        <h3>Matched Skills</h3>
+        <ul>
+            {% for skill in skill_gap.matched %}
+            <li>{{ skill }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+
+    <!-- Section-wise Scores -->
+    {% if section_scores %}
+    <div class="analysis-box">
+        <h3>Section-wise Scores</h3>
+
+        {% for section, sc in section_scores.items() %}
+            <p><b>{{ section }}</b></p>
+
+            <div class="progress">
+                <div class="progress-fill
+                    {% if sc < 5 %}bad{% elif sc < 7.5 %}ok{% else %}good{% endif %}"
+                    data-width="{{ sc * 10 }}">
+                </div>
+            </div>
+
+            <small>
+                {{ sc }}/10 —
+                {% if sc < 5 %}
+                    <b>Low</b>
+                {% elif sc < 7.5 %}
+                    <b>Medium</b>
+                {% else %}
+                    <b>High</b>
+                {% endif %}
+            </small>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Market vs You -->
+    {% if section_scores and market_section_scores %}
+    <div class="analysis-box">
+        <h3>Market vs You (Section-wise)</h3>
+
+        {% for section, your_score in section_scores.items() %}
+            <p><b>{{ section }}</b></p>
+
+            <small>You</small>
+            <div class="progress">
+                <div class="progress-fill good"
+                     data-width="{{ your_score * 10 }}"></div>
+            </div>
+
+            <small>Market Average</small>
+            <div class="progress">
+                <div class="progress-fill ok"
+                     data-width="{{ market_section_scores[section] * 10 }}"></div>
+            </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Resume Rewrite Suggestions -->
+    {% if rewrite_by_section %}
+    <div class="analysis-box">
+        <h3>Resume Rewrite Suggestions (By Section)</h3>
+        <ul>
+            {% for section, tip in rewrite_by_section.items() %}
+            <li><b>{{ section }}:</b> {{ tip }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+
+    <!-- General Suggestions -->
+    {% if suggestions %}
+    <div class="analysis-box">
+        <h3>General Suggestions to Improve</h3>
+        <ul>
+            {% for suggestion in suggestions %}
+            <li>{{ suggestion }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+
+</div>
+
+{% if score is not none %}
+<div class="action-buttons">
+    <a href="/dashboard">
+        <button type="button">Go to Dashboard</button>
+    </a>
+
+    {% if pdf_path %}
+    <a href="{{ pdf_path }}" download>
+        <button type="button">Download Report</button>
+    </a>
+    {% endif %}
+</div>
+{% endif %}
+
+<!-- Animate Progress Bars -->
+<script>
+document.querySelectorAll(".progress-fill").forEach(bar => {
+    const value = bar.dataset.width;
+    requestAnimationFrame(() => {
+        bar.style.width = value + "%";
+    });
+});
+</script>
+
+</body>
+</html>

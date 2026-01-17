@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Resume Analytics Dashboard</title>
+
+<link rel="stylesheet" href="{{ url_for('static', filename='dashboard.css') }}">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+</head>
+
+<body>
+
+<header class="ai-header">
+  <div class="ai-header-content">
+    <h1>📄 Resume Analytics Dashboard</h1>
+    <p class="subtitle">Resume vs job description insights</p>
+
+    <!-- TYPEWRITER TARGET -->
+    <div class="ai-insight">
+      <span id="aiText"></span>
+    </div>
+  </div>
+
+  <div class="ai-header-right">
+    <div class="score-box glow">
+      <div class="score-value">{{ score }}/10</div>
+      <div class="score-label">Match Score</div>
+    </div>
+
+    <div class="confidence-badge {{ confidence|lower }}">
+      {{ confidence }} Confidence
+    </div>
+
+    <button class="dark-toggle" onclick="toggleDark()">🌙 Dark Mode</button>
+  </div>
+</header>
+
+<!-- ================= TABS ================= -->
+<div class="tabs">
+  <button class="tab active" onclick="showTab('overview',this)">Overview</button>
+  <button class="tab" onclick="showTab('analysis',this)">Analysis</button>
+  <button class="tab" onclick="showTab('insights',this)">Insights</button>
+</div>
+
+<!-- ================= OVERVIEW ================= -->
+<div id="overview-section" class="section active">
+  <div class="card-row">
+    <div class="card">Match Score<div class="metric">{{ score }}/10</div></div>
+    <div class="card">Confidence<div class="metric">{{ confidence }}</div></div>
+    <div class="card">Matched Skills<div class="metric">{{ skill_gap.matched|length }}</div></div>
+    <div class="card">Missing Skills<div class="metric">{{ skill_gap.missing|length }}</div></div>
+  </div>
+
+  <div class="chart-theory-box">
+    <div class="chart-area">
+      <canvas id="scoreChart"></canvas>
+    </div>
+    <div class="theory-area">
+      <h3>Overall Match Score</h3>
+      <p>Animated radial score showing resume–job alignment.</p>
+      <p class="tip">📌 Improve missing skills and quantify achievements.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ================= ANALYSIS ================= -->
+<div id="analysis-section" class="section">
+  <div class="chart-theory-box">
+    <div class="chart-area"><canvas id="marketChart"></canvas></div>
+    <div class="theory-area">
+      <h3>Market vs You</h3>
+      <p>Comparison against current market expectations.</p>
+    </div>
+  </div>
+
+  <div class="chart-theory-box">
+    <div class="chart-area"><canvas id="sectionChart"></canvas></div>
+    <div class="theory-area">
+      <h3>Section-wise Performance</h3>
+      <p>Each resume section scored on a 1–10 scale.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ================= INSIGHTS ================= -->
+<div id="insights-section" class="section">
+  <div class="chart-theory-box">
+    <div class="chart-area"><canvas id="skillPie"></canvas></div>
+    <div class="theory-area">
+      <h3>Skill Coverage</h3>
+      <p>Matched vs missing skills.</p>
+      <ul>
+        <li><span class="green-dot"></span> Matched</li>
+        <li><span class="red-dot"></span> Missing</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- ================= DATA ================= -->
+<script id="data" type="application/json">
+{
+  "score": {{ score | tojson }},
+  "sections": {{ section_scores | tojson }},
+  "market": {{ market_compare | tojson }},
+  "matched": {{ skill_gap.matched | tojson }},
+  "missing": {{ skill_gap.missing | tojson }}
+}
+</script>
+
+<script>
+/* ================= DATA ================= */
+const D = JSON.parse(document.getElementById("data").textContent);
+const charts = [];
+
+/* ================= COLOR SYSTEM ================= */
+function palette(){
+  const dark = document.body.classList.contains("dark");
+  return dark
+    ? {p:["#818cf8","#a5b4fc"], m:"#334155", g:"#4ade80", r:"#f87171", t:"#cbd5f5"}
+    : {p:["#6366f1","#818cf8"], m:"#e5e7eb", g:"#22c55e", r:"#ef4444", t:"#334155"};
+}
+
+function gradient(ctx, area, colors){
+  const g = ctx.createLinearGradient(0, area.bottom, 0, area.top);
+  colors.forEach((c,i)=>g.addColorStop(i/(colors.length-1), c));
+  return g;
+}
+
+/* ================= DARK MODE ================= */
+function toggleDark(){
+  document.body.classList.toggle("dark");
+  charts.forEach(c => c.update());
+}
+
+/* ================= TABS ================= */
+function showTab(tab,btn){
+  document.querySelectorAll(".section").forEach(s=>s.classList.remove("active"));
+  document.getElementById(tab+"-section").classList.add("active");
+  document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"));
+  btn.classList.add("active");
+
+  setTimeout(()=>{
+    charts.forEach(c=>{c.resize(); c.update();});
+    if(tab==="overview") runCounters();
+  },200);
+}
+
+/* ================= SCORE RING ================= */
+const scoreCtx = document.getElementById("scoreChart").getContext("2d");
+const scoreChart = new Chart(scoreCtx,{
+  type:"doughnut",
+  data:{
+    labels:["Match","Gap"],
+    datasets:[{
+      data:[0,10],
+      backgroundColor:(ctx)=>{
+        const {chart} = ctx;
+        if(!chart.chartArea) return;
+        return [
+          gradient(chart.ctx, chart.chartArea, palette().p),
+          palette().m
+        ];
+      },
+      borderWidth:0
+    }]
+  },
+  options:{
+    cutout:"72%",
+    animation:{duration:1400,easing:"easeOutQuart"},
+    plugins:{legend:{display:false}},
+    responsive:true
+  }
+});
+charts.push(scoreChart);
+
+setTimeout(()=>{
+  scoreChart.data.datasets[0].data=[D.score,10-D.score];
+  scoreChart.update();
+},300);
+
+/* ================= SECTION BAR ================= */
+charts.push(new Chart(sectionChart,{
+  type:"bar",
+  data:{
+    labels:Object.keys(D.sections),
+    datasets:[{
+      data:Object.values(D.sections),
+      backgroundColor:(ctx)=>{
+        const {chart}=ctx;
+        if(!chart.chartArea) return;
+        return gradient(chart.ctx,chart.chartArea,palette().p);
+      },
+      borderRadius:8
+    }]
+  },
+  options:{responsive:true,scales:{y:{beginAtZero:true,max:10}}}
+}));
+
+/* ================= MARKET BAR ================= */
+charts.push(new Chart(marketChart,{
+  type:"bar",
+  data:{
+    labels:Object.keys(D.sections),
+    datasets:[
+      {
+        label:"You",
+        data:Object.values(D.sections),
+        backgroundColor:(ctx)=>{
+          const {chart}=ctx;
+          if(!chart.chartArea) return;
+          return gradient(chart.ctx,chart.chartArea,palette().p);
+        },
+        borderRadius:8
+      },
+      {
+        label:"Market",
+        data:Object.values(D.market),
+        backgroundColor:palette().m,
+        borderRadius:8
+      }
+    ]
+  },
+  options:{responsive:true,scales:{y:{beginAtZero:true,max:10}}}
+}));
+
+/* ================= SKILL PIE ================= */
+charts.push(new Chart(skillPie,{
+  type:"pie",
+  data:{
+    labels:["Matched","Missing"],
+    datasets:[{
+      data:[D.matched.length||0.1,D.missing.length||0.1],
+      backgroundColor:[palette().g,palette().r],
+      borderWidth:0
+    }]
+  },
+  options:{responsive:true,plugins:{legend:{labels:{color:palette().t}}}}
+}));
+
+/* ================= COUNTERS ================= */
+function animateCounter(el,target,suffix="",duration=1000){
+  let start=0,startTime=performance.now();
+  function tick(now){
+    const p=Math.min((now-startTime)/duration,1);
+    el.textContent=Math.floor(p*target)+suffix;
+    if(p<1) requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+}
+
+function runCounters(){
+  document.querySelectorAll("#overview-section .metric").forEach(el=>{
+    const text=el.textContent.trim();
+    const num=parseInt(text);
+    if(isNaN(num)) return;
+    const suffix=text.replace(num,"");
+    el.textContent="0"+suffix;
+    animateCounter(el,num,suffix);
+  });
+}
+window.addEventListener("load",runCounters);
+
+/* ================= AI TYPEWRITER ================= */
+const aiText=`{% if score >= 7.5 %}
+Job-Ready: Your resume strongly aligns with this role.
+{% elif score >= 5 %}
+Almost There: Improve a few key sections to boost results.
+{% else %}
+Needs Improvement: Strengthen skills and experience sections.
+{% endif %}`;
+
+function typeWriter(el,text){
+  let i=0; el.textContent="";
+  const t=setInterval(()=>{
+    el.textContent+=text.charAt(i++);
+    if(i>=text.length) clearInterval(t);
+  },30);
+}
+window.addEventListener("load",()=>typeWriter(document.getElementById("aiText"),aiText.trim()));
+</script>
+
+</body>
+</html>
