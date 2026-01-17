@@ -1,6 +1,10 @@
+
 flask
+numpy
 pandas
-sentence-transformers
 scikit-learn
-pdfplumber
-python-docx
+torch
+transformers
+scipy
+gunicorn
+
