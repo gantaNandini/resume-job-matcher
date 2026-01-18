@@ -17,7 +17,7 @@ from utils.section_rewriter import section_rewrite_tips
 
 # ---------------- APP SETUP ----------------
 app = Flask(__name__)
-app.secret_key = "resume-dashboard-secret"
+app.secret_key = os.environ.get("SECRET_KEY", "fallback-secret")
 
 
 # ---------------- HELPER ----------------
