@@ -1,10 +1,17 @@
-
 flask
-numpy
-pandas
-scikit-learn
-torch
-transformers
-scipy
 gunicorn
+
+pdfplumber
+pytesseract
+pdf2image
+pillow
+python-docx
+
+pandas
+numpy
+scikit-learn
+sentence-transformers
+torch
+
+reportlab
 
