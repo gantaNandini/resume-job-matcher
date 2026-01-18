@@ -13,6 +13,7 @@ from utils.confidence import confidence_label
 from utils.market_section_scores import market_section_scores
 from utils.pdf_report import generate_pdf
 from utils.section_rewriter import section_rewrite_tips
+import os
 
 
 # ---------------- APP SETUP ----------------
